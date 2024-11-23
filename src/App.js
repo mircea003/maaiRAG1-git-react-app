@@ -12,7 +12,7 @@ function App() {
   const backendURL =
     process.env.NODE_ENV === 'development'
       ? process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000'
-      : process.env.REACT_APP_BACKEND_URL || 'https://your-production-backend.azurewebsites.net';
+      : process.env.REACT_APP_BACKEND_URL || 'https://maairag1webapp-f9deetd3bdehe7e2.westeurope-01.azurewebsites.net/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
