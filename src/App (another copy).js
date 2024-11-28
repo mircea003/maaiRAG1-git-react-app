@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import DocumentList from './DocumentList'; // Import DocumentList
-import DocumentUpload from "./DocumentUpload"; // Import the DocumentUpload component
 
 function App() {
   const [query, setQuery] = useState('');
@@ -139,16 +138,58 @@ function App() {
           />
 
           {/* Upload Section */}
-          <DocumentUpload
-            backendURL={backendURL}
-            fetchDocuments={fetchDocuments}
-            setUploadMessage={setUploadMessage}
-            setRequiresConfirmation={setRequiresConfirmation}
-            setExistingFileDetails={setExistingFileDetails}
-            setNewFileDetails={setNewFileDetails}
-            setFileToUpload={setFileToUpload}
-            setSuggestedNewName={setSuggestedNewName}
-          />
+          <div className="upload-section">
+            <h3>Încarcă un fișier nou PDF:</h3>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!file) {
+                  setUploadMessage('Selectează un fișier pentru încărcare.');
+                  return;
+                }
+
+                try {
+                  const formData = new FormData();
+                  formData.append('file', file);
+
+                  const response = await axios.post(
+                    `${backendURL}/upload-document`,
+                    formData,
+                    {
+                      headers: { 'Content-Type': 'multipart/form-data' },
+                    }
+                  );
+
+                  setUploadMessage(response.data.message); // Success message
+                  setFile(null); // Clear the file input
+                  await fetchDocuments(); // Refresh document list
+                } catch (error) {
+                  if (error.response && error.response.status === 409) {
+                    // Handle conflict
+                    const data = error.response.data;
+                    setRequiresConfirmation(true);
+                    setExistingFileDetails(data.existing_file);
+                    setNewFileDetails(data.new_file);
+                    setSuggestedNewName(data.suggested_new_name);
+                    setFileToUpload(file); // Store the file for later
+                    setUploadMessage(data.message);
+                  } else {
+                    // General error handling
+                    console.error('Eroare la incarcarea fisierului:', error);
+                    setUploadMessage('Nu a reusit sa incarce fisierul.');
+                  }
+                }
+              }}
+            >
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+              <button type="submit">Încarcă</button>
+            </form>
+            {uploadMessage && <p>{uploadMessage}</p>}
+          </div>
 
           {requiresConfirmation && (
             <div className="confirmation-dialog">
