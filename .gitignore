@@ -22,7 +22,7 @@
 node_modules/
 
 # Production build output
-build/
+# build/
 
 # Environment variables
 .env
